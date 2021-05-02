@@ -119,8 +119,8 @@ const roleDisplay = () => {
 }
 
 const roleCreate = () => {
-connection.query('SELECT * FROM department', (err, results) => {
-    if (err) throw err;
+    connection.query('SELECT * FROM department', (err, results) => {
+        if (err) throw err;
         inquirer
             .prompt([
                 {
@@ -139,10 +139,10 @@ connection.query('SELECT * FROM department', (err, results) => {
                     choices() {
                         const choiceArray = [];
                         results.forEach(({ name }) => {
-                          choiceArray.push(name);
+                            choiceArray.push(name);
                         });
                         return choiceArray;
-                      },
+                    },
                     message: 'what department is the role a part of?',
                 },
 
@@ -152,9 +152,9 @@ connection.query('SELECT * FROM department', (err, results) => {
                 console.log(answer.department_id)
                 results.forEach((results) => {
                     console.log(results)
-                  if (results.name === answer.department_id) {
-                    chosenItem = results;
-                  }
+                    if (results.name === answer.department_id) {
+                        chosenItem = results;
+                    }
                 })
 
                 const query = connection.query(
@@ -205,10 +205,10 @@ const empCreate = () => {
                         choices() {
                             const choiceArray = [];
                             results.forEach(({ title }) => {
-                              choiceArray.push(title);
+                                choiceArray.push(title);
                             });
                             return choiceArray;
-                          },
+                        },
                         message: "what is the employee's role?",
                     },
                     {
@@ -217,29 +217,29 @@ const empCreate = () => {
                         choices() {
                             const choiceArray2 = [];
                             results2.forEach(({ first_name }) => {
-                              choiceArray2.push(first_name);
+                                choiceArray2.push(first_name);
                             });
                             return choiceArray2;
-                          },
+                        },
                         message: "Who is the employee's manager?",
                     },
-    
-    
+
+
                 ])
                 .then(function (answer) {
                     let chosenRole;
                     let chosenManager;
                     results.forEach((results) => {
-                      if (results.title === answer.role_id) {
-                        chosenRole = results;
-                      }
+                        if (results.title === answer.role_id) {
+                            chosenRole = results;
+                        }
                     })
                     results2.forEach((results2) => {
                         if (results2.first_name === answer.manager_id) {
-                          chosenManager = results2;
+                            chosenManager = results2;
                         }
-                      })
-    
+                    })
+
                     const query = connection.query(
                         'INSERT INTO employee SET ?',
                         {
@@ -253,13 +253,80 @@ const empCreate = () => {
                             console.log(`${res.affectedRows} employee added!\n`);
                             runEmpTrack();
                         })
-    
+
                 })
         })
     })
 }
 
 const empUpdate = () => {
-    console.log('yo emp')
-    runEmpTrack();
+    connection.query('SELECT * FROM role', (err, results) => {
+        if (err) throw err;
+        connection.query('SELECT * FROM employee', (err, results2) => {
+            if (err) throw err;
+            inquirer
+                .prompt([
+                    {
+                        name: 'first_name',
+                        type: 'list',
+                        choices() {
+                            const choiceArray2 = [];
+                            results2.forEach(({ first_name }) => {
+                                choiceArray2.push(first_name);
+                            });
+                            return choiceArray2;
+                        },
+                        message: "Which employee would you like to update?",
+                    },
+                    {
+                        name: 'role_id',
+                        type: 'list',
+                        choices() {
+                            const choiceArray = [];
+                            results.forEach(({ title }) => {
+                                choiceArray.push(title);
+                            });
+                            return choiceArray;
+                        },
+                        message: "what is the employee's new role?",
+                    },
+                ])
+                .then(function (answer) {
+                    let chosenRole;
+
+                    let chosenEmployee;
+                    results2.forEach((results2) => {
+                        if (results2.first_name === answer.first_name) {
+                            chosenEmployee = results2;
+                        }
+                    })
+                    results.forEach((results) => {
+                        if (results.title === answer.role_id) {
+                            chosenRole = results;
+                        }
+
+                        
+                    })
+                    console.log(chosenEmployee)
+                    // console.log(chosenRole)
+
+                    const query = connection.query(
+                        'UPDATE employee SET ? WHERE ?',
+                        [
+                        {
+                            role_id: chosenRole.id
+                        },
+                        {
+                            first_name: chosenEmployee.id
+                        },
+                    ],
+                        (err, res) => {
+                            if (err) throw err;
+                            console.log(`${res.affectedRows} employee updated!\n`);
+                            runEmpTrack();
+                        })
+
+                })
+        })
+    })
 }
