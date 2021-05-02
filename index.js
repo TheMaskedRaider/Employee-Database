@@ -33,7 +33,8 @@ const runEmpTrack = () => {
                 "Create Department",
                 "Create Role",
                 "Create Employee",
-                "Update Employee Role"
+                "Update Employee Role",
+                "Quit"
             ],
         })
         .then((answer) => {
@@ -66,6 +67,10 @@ const runEmpTrack = () => {
                     empUpdate();
                     break;
 
+                case "Quit":
+                    connection.end();
+                    break;
+
                 default:
                     console.log(`Invalid action: ${answer.action}`);
                     break;
@@ -74,8 +79,11 @@ const runEmpTrack = () => {
 };
 
 const dpmtDisplay = () => {
-    console.log('hello dpmt')
-    runEmpTrack();
+    connection.query('SELECT * FROM department', (err, res) => {
+        if (err) throw err;
+        console.table(res);
+        runEmpTrack();
+    });
 }
 
 const dpmtCreate = () => {
@@ -84,8 +92,11 @@ const dpmtCreate = () => {
 }
 
 const roleDisplay = () => {
-    console.log('hello role')
-    runEmpTrack();
+    connection.query('SELECT * FROM role', (err, res) => {
+        if (err) throw err;
+        console.table(res);
+        runEmpTrack();
+    });
 }
 
 const roleCreate = () => {
@@ -94,8 +105,11 @@ const roleCreate = () => {
 }
 
 const empDisplay = () => {
-    console.log('hello emp')
-    runEmpTrack();
+    connection.query('SELECT * FROM employee', (err, res) => {
+        if (err) throw err;
+        console.table(res);
+        runEmpTrack();
+    });
 }
 const empCreate = () => {
     console.log('hi emp')
