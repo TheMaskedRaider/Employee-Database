@@ -87,8 +87,27 @@ const dpmtDisplay = () => {
 }
 
 const dpmtCreate = () => {
-    console.log('Hi dpmt')
-    runEmpTrack();
+    inquirer
+        .prompt([
+            {
+                type: "input",
+                name: "name",
+                message: "What is the new department's name?"
+            }
+        ])
+        .then(function (answer) {
+            const query = connection.query(
+                'INSERT INTO department SET ?',
+                {
+                    name: answer.name,
+                },
+                (err, res) => {
+                    if (err) throw err;
+                    console.log(`${res.affectedRows} department inserted!\n`);
+                    runEmpTrack();
+                })
+
+        })
 }
 
 const roleDisplay = () => {
@@ -100,8 +119,60 @@ const roleDisplay = () => {
 }
 
 const roleCreate = () => {
-    console.log('hi role')
-    runEmpTrack();
+connection.query('SELECT * FROM department', (err, results) => {
+    if (err) throw err;
+        inquirer
+            .prompt([
+                {
+                    type: "input",
+                    name: "title",
+                    message: "What is the new role's name?"
+                },
+                {
+                    type: "input",
+                    name: "salary",
+                    message: "What is the new role's salary?"
+                },
+                {
+                    name: 'department_id',
+                    type: 'list',
+                    choices() {
+                        const choiceArray = [];
+                        results.forEach(({ name }) => {
+                          choiceArray.push(name);
+                        });
+                        return choiceArray;
+                      },
+                    message: 'what department is the role a part of?',
+                },
+
+            ])
+            .then(function (answer) {
+                let chosenItem;
+                console.log(answer.department_id)
+                results.forEach((results) => {
+                    console.log(results)
+                  if (results.name === answer.department_id) {
+                    chosenItem = results;
+                  }
+                })
+
+                const query = connection.query(
+                    'INSERT INTO role SET ?',
+                    {
+                        title: answer.title,
+                        salary: answer.salary,
+                        department_id: chosenItem.id,
+                    },
+                    (err, res) => {
+                        if (err) throw err;
+                        console.log(`${res.affectedRows} role inserted!\n`);
+                        runEmpTrack();
+                    })
+
+            })
+    })
+
 }
 
 const empDisplay = () => {
@@ -112,8 +183,80 @@ const empDisplay = () => {
     });
 }
 const empCreate = () => {
-    console.log('hi emp')
-    runEmpTrack();
+    connection.query('SELECT * FROM role', (err, results) => {
+        if (err) throw err;
+        connection.query('SELECT * FROM employee', (err, results2) => {
+            if (err) throw err;
+            inquirer
+                .prompt([
+                    {
+                        type: "input",
+                        name: "first_name",
+                        message: "What is the new employee's first name?"
+                    },
+                    {
+                        type: "input",
+                        name: "last_name",
+                        message: "What is the new employee's last name?"
+                    },
+                    {
+                        name: 'role_id',
+                        type: 'list',
+                        choices() {
+                            const choiceArray = [];
+                            results.forEach(({ title }) => {
+                              choiceArray.push(title);
+                            });
+                            return choiceArray;
+                          },
+                        message: "what is the employee's role?",
+                    },
+                    {
+                        name: 'manager_id',
+                        type: 'list',
+                        choices() {
+                            const choiceArray2 = [];
+                            results2.forEach(({ first_name }) => {
+                              choiceArray2.push(first_name);
+                            });
+                            return choiceArray2;
+                          },
+                        message: "Who is the employee's manager?",
+                    },
+    
+    
+                ])
+                .then(function (answer) {
+                    let chosenRole;
+                    let chosenManager;
+                    results.forEach((results) => {
+                      if (results.title === answer.role_id) {
+                        chosenRole = results;
+                      }
+                    })
+                    results2.forEach((results2) => {
+                        if (results2.first_name === answer.manager_id) {
+                          chosenManager = results2;
+                        }
+                      })
+    
+                    const query = connection.query(
+                        'INSERT INTO employee SET ?',
+                        {
+                            first_name: answer.first_name,
+                            last_name: answer.last_name,
+                            role_id: chosenRole.id,
+                            manager_id: chosenManager.id,
+                        },
+                        (err, res) => {
+                            if (err) throw err;
+                            console.log(`${res.affectedRows} employee added!\n`);
+                            runEmpTrack();
+                        })
+    
+                })
+        })
+    })
 }
 
 const empUpdate = () => {
